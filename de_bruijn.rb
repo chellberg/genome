@@ -158,6 +158,32 @@ class Graph
       end
     end
   end
+
+  def number_of_nodes
+    self.nodes.length
+  end
+
+  def number_of_edges
+    self.graph.length
+  end
+
+  def has_eulerian_path?
+    self.number_of_unbalanced_nodes == 0 && self.number_of_semi_balanced_nodes == 2
+  end
+
+  def has_eulerian_cycle?
+    self.number_of_unbalanced_nodes == 0 && self.number_of_semi_balanced_nodes == 0
+  end
+
+  def is_eulerian?
+    has_eulerian_path? || has_eulerian_cycle?
+  end
+
+  def eulerian_path
+    # return eulerian path or cycle
+    raise 'not eulerian' if !is_eulerian?
+    graph = self.graph
+  end
 end
 
 
