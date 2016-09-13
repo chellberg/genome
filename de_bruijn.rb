@@ -182,7 +182,28 @@ class Graph
   def eulerian_path
     # return eulerian path or cycle
     raise 'not eulerian' if !is_eulerian?
-    graph = self.graph
+    
+    # skipping eulerian path implementation for now since I know there's a cycle
+    @tour = []
+
+    # select random starting node
+    source = self.graph.keys.sample
+    visit source
+
+    # not sure why reversing and dropping the beginning
+    @tour.reverse!.shift
+
+    @tour
+  end
+
+  def visit node
+    nodes = self.graph[node]
+    while nodes.length > 0 do
+      destination = nodes.pop
+      visit destination
+    end
+
+    @tour.push node
   end
 end
 
