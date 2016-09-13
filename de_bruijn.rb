@@ -115,6 +115,8 @@ class Graph
         nodeL.number_of_incoming_edges += 1
         nodeL.number_of_outgoing_edges += 1
 
+        self.graph[nodeL] << nodeR
+
         # set default value of self.graph hash/dictionary?
         # self.G.setdefault(nodeL, []).append(nodeR)
       end
