@@ -45,11 +45,15 @@ class Node
   end
 
   def hash
-    self.k1mer.hash
+    self.km1mer.hash
+  end
+
+  def eql?(b)
+    self.hash == b.hash
   end
 
   def string
-    self.k1mer
+    self.km1mer
   end
 end
 
