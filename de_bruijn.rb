@@ -10,8 +10,8 @@ def de_bruijn(string, k)
   (0..(string.length - (k + 1))).each do |i|
     # represent edges as tuples
     # left and right k-1mers
-    first_kmer = string[i..(i + k-1)] 
-    second_kmer = string[(i+1)..(i + k)]
+    first_kmer = string[i...(i + k-1)] 
+    second_kmer = string[(i+1)...(i + k)]
     edges.push([first_kmer, second_kmer])
 
     # add kmers to graph as nodes if they don't already exist
