@@ -17,8 +17,6 @@ def de_bruijn(string, k)
     # add kmers to graph as nodes if they don't already exist
     nodes.add first_kmer
     nodes.add second_kmer
-
   end
   [nodes, edges]
 end
-

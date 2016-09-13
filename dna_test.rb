@@ -17,4 +17,3 @@ class DnaTest < Minitest::Test
     assert_equal 2, @nodes.first.length
   end
 end
-
