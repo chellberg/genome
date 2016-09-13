@@ -62,7 +62,11 @@ class Graph
 
   def initialize(k)
     # multimap from Nodes to neighbors
-    self.graph = {}
+
+    # fixes empty self.graph:
+    # http://stackoverflow.com/questions/2698460/strange-behavior-when-using-hash-default-value-e-g-hash-new
+    self.graph = Hash.new { |h, k| h[k] = [] }
+
     # maps k1mers to Node objects
     self.nodes = {}
     @k = k
