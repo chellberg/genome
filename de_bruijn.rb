@@ -1,95 +1,27 @@
 require 'set'
 require 'pry'
-# create edge between the 2 k-1mers in this string
-# e.g. string[1..k] and string[0..k-1]
-# and create nodes for them if they don't already exist
-# string, kmer
-def de_bruijn(string, k)
-  edges = []
-  nodes = Set.new
-  # from the beginning of the string to the last position where a kmer could start
-  (0..(string.length - (k + 1))).each do |i|
-    # represent edges as tuples
-    # left and right k-1mers
-    first_k1mer = string[i...(i + k-1)]
-    second_k1mer = string[(i+1)...(i + k)]
-    edges.push([first_kmer, second_kmer])
-
-    # add kmers to graph as nodes if they don't already exist
-    nodes.add first_k1mer
-    nodes.add second_k1mer
-  end
-  [nodes, edges]
-end
-
-def load_data
-  contents = File.read('coding_challenge_data_set.txt')
-  # drop 1 because the first element will be ""
-  @fragment_array = contents.delete("\r\n").split(/>Rosalind_\d{4}/).drop(1)
-end
-
-class Node
-  attr_accessor :km1mer, :number_of_incoming_edges, :number_of_outgoing_edges
-  def initialize km1mer
-    self.km1mer = km1mer
-    self.number_of_incoming_edges = 0
-    self.number_of_outgoing_edges = 0
-  end
-
-  def is_semi_balanced
-    (self.number_of_incoming_edges - self.number_of_outgoing_edges).abs == 1
-  end
-
-  def is_balanced
-    self.number_of_incoming_edges == self.number_of_outgoing_edges
-  end
-
-  def hash
-    self.km1mer.hash
-  end
-
-  def eql?(b)
-    self.hash == b.hash
-  end
-
-  def string
-    self.km1mer
-  end
-end
 
 class Graph
-  attr_accessor :nodes, :graph
+  attr_accessor :nodes, :graph,:number_of_balanced_nodes,
+    :number_of_semi_balanced_nodes, :number_of_unbalanced_nodes, :head, :tail
 
-  def initialize(k)
+  def initialize k, test: false
     # multimap from Nodes to neighbors
 
     # fixes empty self.graph:
-    # http://stackoverflow.com/questions/2698460/strange-behavior-when-using-hash-default-value-e-g-hash-new
+    # http://stackoverflow.com/questions/2698460/strange-
+    # behavior-when-using-hash-default-value-e-g-hash-new
     self.graph = Hash.new { |h, k| h[k] = [] }
 
     # maps k1mers to Node objects
     self.nodes = {}
     @k = k
-  end
-
-  def reads
-    contents = File.read('coding_challenge_data_set.txt')
-    # drop 1 because the first element will be ""
-    contents.delete("\r\n").split(/>Rosalind_\d{4}/).drop(1)
+    @test = test
   end
 
   def execute
     fill
     tally
-  end
-
-  def chop string
-   (0..(string.length - (@k + 1))).each do |i|
-     kmer = string[i...(i + @k)]
-     km1L = string[i...(i + @k-1)]
-     km1R = string[(i + 1)...(i + @k)]
-     yield kmer, km1L, km1R
-   end
   end
 
   def fill
@@ -123,12 +55,6 @@ class Graph
     end
   end
 
-  attr_accessor :number_of_balanced_nodes,
-    :number_of_semi_balanced_nodes,
-    :number_of_unbalanced_nodes,
-    :head,
-    :tail
-
   def tally
     # Iterate through nodes and tally how many are balanced,
     # semi-balanced, or neither
@@ -141,9 +67,9 @@ class Graph
     self.tail = nil
 
     self.nodes.each do |key, node|
-      if node.is_balanced
+      if node.is_balanced?
         self.number_of_balanced_nodes += 1
-      elsif node.is_semi_balanced
+      elsif node.is_semi_balanced?
         if node.number_of_incoming_edges == node.number_of_outgoing_edges + 1
           self.tail = node
         end
@@ -157,6 +83,57 @@ class Graph
         self.number_of_unbalanced_nodes += 1
       end
     end
+  end
+
+  def eulerian_path
+    # return eulerian path or cycle
+    raise 'not eulerian' if !is_eulerian?
+    
+    # skipping eulerian path implementation for now since I know there's a cycle
+    @tour = []
+    @graph = self.graph
+    # select random starting node
+    source = @graph.keys.sample
+    visit source
+
+    # not sure why reversing and dropping the beginning
+    @tour.reverse!.shift
+
+    @tour
+  end
+
+  def visit node
+    connected_nodes = @graph[node]
+    if node.number_of_incoming_edges == 0 || node.number_of_outgoing_edges == 0
+      binding.pry
+    end
+    while connected_nodes.length > 0 do
+      destination = connected_nodes.pop
+      visit destination
+    end
+
+    @tour.push node
+  end
+
+  def reads
+    if @test
+      contents = File.read('sample_data.txt')
+      # drop 1 because the first element will be ""
+      contents.delete("\r\n").split(/>Frag_\d{2}/).drop(1)
+    else
+      contents = File.read('coding_challenge_data_set.txt')
+      # drop 1 because the first element will be ""
+      contents.delete("\r\n").split(/>Rosalind_\d{4}/).drop(1)
+    end
+  end
+
+  def chop string
+   (0..(string.length - (@k + 1))).each do |i|
+     kmer = string[i...(i + @k)]
+     km1L = string[i...(i + @k-1)]
+     km1R = string[(i + 1)...(i + @k)]
+     yield kmer, km1L, km1R
+   end
   end
 
   def number_of_nodes
@@ -178,79 +155,47 @@ class Graph
   def is_eulerian?
     has_eulerian_path? || has_eulerian_cycle?
   end
+end
 
-  def eulerian_path
-    # return eulerian path or cycle
-    raise 'not eulerian' if !is_eulerian?
-    
-    # skipping eulerian path implementation for now since I know there's a cycle
-    @tour = []
+class Node
+  attr_accessor :km1mer, :number_of_incoming_edges, :number_of_outgoing_edges
 
-    # select random starting node
-    source = self.graph.keys.sample
-    visit source
-
-    # not sure why reversing and dropping the beginning
-    @tour.reverse!.shift
-
-    @tour
+  def initialize km1mer
+    self.km1mer = km1mer
+    self.number_of_incoming_edges = 0
+    self.number_of_outgoing_edges = 0
   end
 
-  def visit node
-    nodes = self.graph[node]
-    while nodes.length > 0 do
-      destination = nodes.pop
-      visit destination
-    end
+  def is_semi_balanced?
+    (self.number_of_incoming_edges - self.number_of_outgoing_edges).abs == 1
+  end
 
-    @tour.push node
+  def is_balanced?
+    self.number_of_incoming_edges == self.number_of_outgoing_edges
+  end
+
+  def hash
+    self.km1mer.hash
+  end
+
+  def eql? b
+    self.hash == b.hash
+  end
+
+  def string
+    self.km1mer
   end
 end
 
+# test
+g = Graph.new 5, test: true
 
+# real
+# g = Graph.new 500
 
-KMER_LENGTH = 500
-
-def build_de_graph
-  @data = load_data
-  @nodes = Set.new
-  @edges = []
-  @data.each do |fragment_string|
-    nodes, edges = de_bruijn(fragment_string, KMER_LENGTH)
-    @nodes += nodes
-    @edges += edges
-  end
-end
-
-g = Graph.new(500)
 g.fill
+g.tally
+
+path = g.eulerian_path; nil
+
 binding.pry
-
-# def naive
-#   data = load_data
-# end
-
-# # http://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Longest_common_substring#Ruby
-# def find_longest_common_substring(s1, s2)
-#   if (s1 == "" || s2 == "")
-#     return ""
-#   end
-#   m = Array.new(s1.length){ [0] * s2.length }
-#   longest_length, longest_end_pos = 0,0
-#   (0 .. s1.length - 1).each do |x|
-#     (0 .. s2.length - 1).each do |y|
-#       if s1[x] == s2[y]
-#         m[x][y] = 1
-#         if (x > 0 && y > 0)
-#           m[x][y] += m[x-1][y-1]
-#         end
-#         if m[x][y] > longest_length
-#           longest_length = m[x][y]
-#           longest_end_pos = x
-#         end
-#       end
-#     end
-#   end
-#   return s1[longest_end_pos - longest_length + 1 .. longest_end_pos]
-# end
-
