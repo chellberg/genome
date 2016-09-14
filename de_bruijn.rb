@@ -8,13 +8,13 @@ class Graph
   def initialize k, test: false
     # multimap from Nodes to neighbors
 
-    # fixes empty self.graph:
+    # fixes empty @graph:
     # http://stackoverflow.com/questions/2698460/strange-
     # behavior-when-using-hash-default-value-e-g-hash-new
-    self.graph = Hash.new { |h, k| h[k] = [] }
+    @graph = Hash.new { |h, k| h[k] = [] }
 
     # maps k1mers to Node objects
-    self.nodes = {}
+    @nodes = {}
     @k = k
     @test = test
   end
@@ -47,27 +47,24 @@ class Graph
       chop(read) do |kmer, km1L, km1R|
         nodeL, nodeR = nil, nil
         # find or create left node
-        if self.nodes.include? km1L
-          nodeL = self.nodes[km1L]
+        if @nodes.include? km1L
+          nodeL = @nodes[km1L]
         else
-          nodeL = self.nodes[km1L] = Node.new(km1L)
+          nodeL = @nodes[km1L] = Node.new(km1L)
         end
 
         # find or create right node
-        if self.nodes.include? km1R
-          nodeR = self.nodes[km1R]
+        if @nodes.include? km1R
+          nodeR = @nodes[km1R]
         else
-          nodeR = self.nodes[km1R] = Node.new(km1R)
+          nodeR = @nodes[km1R] = Node.new(km1R)
         end
 
         # increment node in/out counts
         nodeL.number_of_outgoing_edges += 1
         nodeR.number_of_incoming_edges += 1
 
-        self.graph[nodeL] << nodeR
-
-        # set default value of self.graph hash/dictionary?
-        # self.G.setdefault(nodeL, []).append(nodeR)
+        @graph[nodeL] << nodeR
       end
     end
   end
@@ -75,29 +72,29 @@ class Graph
   def tally
     # Iterate through nodes and tally how many are balanced,
     # semi-balanced, or neither
-    self.number_of_balanced_nodes = 0
-    self.number_of_semi_balanced_nodes = 0
-    self.number_of_unbalanced_nodes = 0
+    @number_of_balanced_nodes = 0
+    @number_of_semi_balanced_nodes = 0
+    @number_of_unbalanced_nodes = 0
     # Keep track of head and tail nodes in the case of a graph with
     # Eularian path (not cycle)
-    self.head = nil
-    self.tail = nil
+    @head = nil
+    @tail = nil
 
-    self.nodes.each do |key, node|
+    @nodes.each do |key, node|
       if node.is_balanced?
-        self.number_of_balanced_nodes += 1
+        @number_of_balanced_nodes += 1
       elsif node.is_semi_balanced?
         if node.number_of_incoming_edges == node.number_of_outgoing_edges + 1
-          self.tail = node
+          @tail = node
         end
 
         if node.number_of_incoming_edges == node.number_of_outgoing_edges - 1
-          self.head = node
+          @head = node
         end
 
-        self.number_of_semi_balanced_nodes += 1
+        @number_of_semi_balanced_nodes += 1
       else
-        self.number_of_unbalanced_nodes += 1
+        @number_of_unbalanced_nodes += 1
       end
     end
   end
@@ -108,7 +105,7 @@ class Graph
     
     # skipping eulerian path implementation for now since I know there's a cycle
     @tour = []
-    @graph = self.graph
+    @graph = @graph
     # select random starting node
     source = @graph.keys.sample
     visit source
@@ -152,19 +149,19 @@ class Graph
     end
   end
   def number_of_nodes
-    self.nodes.length
+    @nodes.length
   end
 
   def number_of_edges
-    self.graph.length
+    @graph.length
   end
 
   def has_eulerian_path?
-    self.number_of_unbalanced_nodes == 0 && self.number_of_semi_balanced_nodes == 2
+    @number_of_unbalanced_nodes == 0 && @number_of_semi_balanced_nodes == 2
   end
 
   def has_eulerian_cycle?
-    self.number_of_unbalanced_nodes == 0 && self.number_of_semi_balanced_nodes == 0
+    @number_of_unbalanced_nodes == 0 && @number_of_semi_balanced_nodes == 0
   end
 
   def is_eulerian?
@@ -183,46 +180,47 @@ class Node
   attr_accessor :km1mer, :number_of_incoming_edges, :number_of_outgoing_edges
 
   def initialize km1mer
-    self.km1mer = km1mer
-    self.number_of_incoming_edges = 0
-    self.number_of_outgoing_edges = 0
+    @km1mer = km1mer
+    @number_of_incoming_edges = 0
+    @number_of_outgoing_edges = 0
   end
 
   def is_semi_balanced?
-    (self.number_of_incoming_edges - self.number_of_outgoing_edges).abs == 1
+    (@number_of_incoming_edges - @number_of_outgoing_edges).abs == 1
   end
 
   def is_balanced?
-    self.number_of_incoming_edges == self.number_of_outgoing_edges
+    @number_of_incoming_edges == @number_of_outgoing_edges
   end
 
   def hash
-    self.km1mer.hash
+    @km1mer.hash
   end
 
   def eql? b
-    self.hash == b.hash
+    @hash == b.hash
   end
 
   def string
-    self.km1mer
+    @km1mer
   end
 end
 
-# how to test: uncomment test or real initialization, run ruby de_bruijn.rb
+# how to test: uncomment test or real initialization, uncomment the rest, run
+# ruby de_bruijn.rb
 
-# test
-# g = Graph.new 8, test: true
+# test - k value of 8 produces eulerian graph
+# g = Graph.new 7, test: true
 
 # real
 # g = Graph.new 500
 
-g.fill
-g.tally
+# g.fill
+# g.tally
 
 # uncomment this line (and tweak the method if you want) to look for k values
 # that produce eulerian graphs
 # g.find_working_k_value 
 
-path = g.eulerian_path; nil
-binding.pry
+# binding.pry
+# path = g.eulerian_path; nil
