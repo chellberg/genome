@@ -24,6 +24,23 @@ class Graph
     tally
   end
 
+  def find_working_k_value
+    starting_k = @k
+
+    until @k > 1000 do
+      @k += 1
+      initialize(@k)
+      puts "testing k=#{@k}"
+      fill
+      tally
+      if is_eulerian?
+        binding.pry
+      else
+        puts stats
+      end
+    end
+  end
+
   def fill
     reads.each do |read|
       # why did we need to calculate kmer here?
@@ -152,6 +169,13 @@ class Graph
 
   def is_eulerian?
     has_eulerian_path? || has_eulerian_cycle?
+  end
+
+  def stats
+    puts "eulerian? #{is_eulerian?}"
+    percent_semi = number_of_semi_balanced_nodes.to_f / number_of_balanced_nodes.to_f
+    puts "#{percent_semi} percent semi balanced (#{number_of_semi_balanced_nodes})"
+    puts "number of edges: #{number_of_edges}"
   end
 end
 
