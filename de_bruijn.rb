@@ -104,9 +104,7 @@ class Graph
 
   def visit node
     connected_nodes = @graph[node]
-    if node.number_of_incoming_edges == 0 || node.number_of_outgoing_edges == 0
-      binding.pry
-    end
+
     while connected_nodes.length > 0 do
       destination = connected_nodes.pop
       visit destination
