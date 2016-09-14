@@ -3,7 +3,8 @@ require 'pry'
 
 class Graph
   attr_accessor :nodes, :graph,:number_of_balanced_nodes,
-    :number_of_semi_balanced_nodes, :number_of_unbalanced_nodes, :head, :tail
+    :number_of_semi_balanced_nodes, :number_of_unbalanced_nodes, :head, :tail,
+    :tour, :naked_tour
 
   def initialize k, test: false
     # multimap from Nodes to neighbors
@@ -101,19 +102,29 @@ class Graph
 
   def eulerian_path
     # return eulerian path or cycle
-    raise 'not eulerian' if !is_eulerian?
-    
-    # skipping eulerian path implementation for now since I know there's a cycle
+    puts 'not eulerian' if !is_eulerian?
+
+    if true # has_eulerian_path?
+      @graph = @graph.clone
+      raise if @head.nil? || @tail.nil?
+      @graph[@tail] << @head
+    end
     @tour = []
-    @graph = @graph
     # select random starting node
     source = @graph.keys.sample
     visit source
 
     # not sure why reversing and dropping the beginning
+    @naked_tour = @tour.clone
     @tour.reverse!.shift
 
     @tour
+  end
+
+  def build_string
+    first = @tour.shift.km1mer
+    final_letters = @tour.map{ |node| node.km1mer[-1]}
+    first + final_letters.join('')
   end
 
   def visit node
@@ -210,17 +221,17 @@ end
 # ruby de_bruijn.rb
 
 # test - k value of 8 produces eulerian graph
-# g = Graph.new 7, test: true
+g = Graph.new 5, test: true
 
 # real
 # g = Graph.new 500
 
-# g.fill
-# g.tally
+g.fill
+g.tally
 
 # uncomment this line (and tweak the method if you want) to look for k values
 # that produce eulerian graphs
 # g.find_working_k_value 
 
-# binding.pry
+binding.pry
 # path = g.eulerian_path; nil
