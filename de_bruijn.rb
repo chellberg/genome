@@ -208,16 +208,3 @@ class Node
     self.km1mer
   end
 end
-
-# test
-g = Graph.new 5, test: true
-
-# real
-# g = Graph.new 500
-
-g.fill
-g.tally
-
-path = g.eulerian_path; nil
-
-binding.pry
