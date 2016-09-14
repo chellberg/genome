@@ -113,6 +113,16 @@ class Graph
     @tour.push node
   end
 
+  def chop string
+   final_index = string.length - @k
+   for i in 0..final_index do
+     kmer = string[i...(i + @k)]
+     km1L = string[i...(i + @k-1)]
+     km1R = string[(i + 1)...(i + @k)]
+     yield kmer, km1L, km1R
+   end
+  end
+
   def reads
     if @test
       contents = File.read('sample_data.txt')
@@ -124,16 +134,6 @@ class Graph
       contents.delete("\r\n").split(/>Rosalind_\d{4}/).drop(1)
     end
   end
-
-  def chop string
-   (0..(string.length - (@k + 1))).each do |i|
-     kmer = string[i...(i + @k)]
-     km1L = string[i...(i + @k-1)]
-     km1R = string[(i + 1)...(i + @k)]
-     yield kmer, km1L, km1R
-   end
-  end
-
   def number_of_nodes
     self.nodes.length
   end
