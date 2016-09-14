@@ -208,3 +208,21 @@ class Node
     self.km1mer
   end
 end
+
+# how to test: uncomment test or real initialization, run ruby de_bruijn.rb
+
+# test
+# g = Graph.new 8, test: true
+
+# real
+# g = Graph.new 500
+
+g.fill
+g.tally
+
+# uncomment this line (and tweak the method if you want) to look for k values
+# that produce eulerian graphs
+# g.find_working_k_value 
+
+path = g.eulerian_path; nil
+binding.pry
