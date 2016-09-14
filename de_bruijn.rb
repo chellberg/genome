@@ -44,8 +44,8 @@ class Graph
         end
 
         # increment node in/out counts
-        nodeL.number_of_incoming_edges += 1
         nodeL.number_of_outgoing_edges += 1
+        nodeR.number_of_incoming_edges += 1
 
         self.graph[nodeL] << nodeR
 
