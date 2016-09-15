@@ -105,18 +105,18 @@ class Graph
     puts 'not eulerian' if !is_eulerian?
 
     if true # has_eulerian_path?
-      @graph = @graph.clone
+      @cloned_graph = @graph.clone
       raise if @head.nil? || @tail.nil?
-      @graph[@tail] << @head
+      @cloned_graph[@tail] << @head
     end
     @tour = []
     # select random starting node
-    source = @graph.keys.sample
+    source = @head
     visit source
 
     # not sure why reversing and dropping the beginning
     @naked_tour = @tour.clone
-    @tour.reverse!.shift
+    @tour.reverse! # .shift
 
     @tour
   end
@@ -135,6 +135,9 @@ class Graph
       visit destination
     end
 
+    # if node == @head
+    #   binding.pry
+    # end
     @tour.push node
   end
 
@@ -221,10 +224,10 @@ end
 # ruby de_bruijn.rb
 
 # test - k value of 8 produces eulerian graph
-g = Graph.new 5, test: true
+# g = Graph.new 5, test: true
 
 # real
-# g = Graph.new 500
+g = Graph.new 500
 
 g.fill
 g.tally
@@ -232,6 +235,20 @@ g.tally
 # uncomment this line (and tweak the method if you want) to look for k values
 # that produce eulerian graphs
 # g.find_working_k_value 
+#
+
+# remove overlap
+g.nodes.each do |kmer, node|
+  if node.number_of_outgoing_edges == 2
+    # maybe check whether they're going to the same node
+    # remove one edge
+    g.graph[node].pop
+    node.number_of_outgoing_edges -= 1
+    g.graph[node].first.number_of_incoming_edges -= 1
+  end
+end
+
+g.tally
 
 binding.pry
 # path = g.eulerian_path; nil
