@@ -4,7 +4,7 @@ require 'pry'
 class Graph
   attr_accessor :nodes, :graph,:number_of_balanced_nodes,
     :number_of_semi_balanced_nodes, :number_of_unbalanced_nodes, :head, :tail,
-    :tour, :naked_tour, :offenders
+    :tour, :naked_tour, :offenders, :cloned_graph
 
   def initialize k, test: false
     # multimap from Nodes to neighbors
@@ -132,6 +132,7 @@ class Graph
 
     while connected_nodes.length > 0 do
       destination = connected_nodes.pop
+      @graph.delete node
       visit destination
     end
 
@@ -240,7 +241,7 @@ end
 # g = Graph.new 5, test: true
 
 # real
-g = Graph.new 500
+g = Graph.new 700
 
 g.fill
 g.tally
@@ -251,6 +252,7 @@ g.tally
 #
 
 # remove overlap
+binding.pry
 g.nodes.each do |kmer, node|
   if node.number_of_outgoing_edges == 2
     # maybe check whether they're going to the same node
@@ -262,6 +264,9 @@ g.nodes.each do |kmer, node|
 end
 
 g.tally
-
+# g.eulerian_path; nil
+l = g.eulerian_path.length
+d = g.cloned_graph.length - l
+c = g.cloned_graph.length
 binding.pry
 # path = g.eulerian_path; nil
