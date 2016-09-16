@@ -4,7 +4,7 @@ require 'pry'
 class Graph
   attr_accessor :nodes, :graph,:number_of_balanced_nodes,
     :number_of_semi_balanced_nodes, :number_of_unbalanced_nodes, :head, :tail,
-    :tour, :naked_tour
+    :tour, :naked_tour, :offenders
 
   def initialize k, test: false
     # multimap from Nodes to neighbors
@@ -187,6 +187,19 @@ class Graph
     percent_semi = number_of_semi_balanced_nodes.to_f / number_of_balanced_nodes.to_f
     puts "#{percent_semi} percent semi balanced (#{number_of_semi_balanced_nodes})"
     puts "number of edges: #{number_of_edges}"
+  end
+
+  def number_of_overlap_edges
+    count = 0
+    @offenders
+    @nodes.each do |node|
+      if @graph[node].length > 1
+        @offenders << node
+        count += 1
+      end
+    end
+
+    count
   end
 end
 
